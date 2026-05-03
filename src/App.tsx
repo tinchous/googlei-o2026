@@ -176,33 +176,44 @@ function BlockTextBuilder({ text, accentColor, onBlockPlaced, size = 'md' }: { t
                 >
                   {active ? (
                       <motion.div
-                        initial={{ opacity: 0, scale: 0.2, y: -700, x: randomX, rotate: randomRotate, translateZ: 0 }}
+                        initial={{ 
+                          opacity: 0, 
+                          scale: 0, 
+                          y: (Math.random() - 0.5) * 1000, 
+                          x: (Math.random() - 0.5) * 1000, 
+                          rotate: randomRotate, 
+                          translateZ: 2000,
+                          filter: 'brightness(2) blur(10px)'
+                        }}
                         animate={{ 
                           opacity: 1, 
                           scale: 1, 
                           y: 0, 
-                          x: 0,
-                          rotate: 0,
-                          translateZ: Math.sin(buildingOrder * 0.7) * 25
+                          x: 0, 
+                          rotate: 0, 
+                          translateZ: Math.sin(buildingOrder * 0.7) * 35,
+                          filter: 'brightness(1) blur(0px)'
                         }}
                         onAnimationComplete={() => onBlockPlaced?.()}
                         transition={{ 
-                          opacity: { duration: 0.3, delay },
-                          scale: { duration: 0.5, delay, type: 'spring' },
-                          y: { 
-                            duration: 0.9, 
-                            delay,
-                            type: 'spring',
-                            damping: 10,
-                            stiffness: 70
-                          },
-                          rotate: { duration: 0.8, delay },
-                          translateZ: { duration: 4, repeat: Infinity, repeatType: 'mirror', ease: 'easeInOut' }
+                          opacity: { duration: 0.6, delay },
+                          scale: { duration: 1, delay, type: 'spring', damping: 15 },
+                          y: { duration: 1.5, delay, type: 'spring', damping: 12, stiffness: 40 },
+                          x: { duration: 1.5, delay, type: 'spring', damping: 12, stiffness: 40 },
+                          rotate: { duration: 1.2, delay },
+                          translateZ: { duration: 4, repeat: Infinity, repeatType: 'mirror', ease: 'easeInOut' },
+                          filter: { duration: 0.8, delay }
                         }}
-                        className={`w-full h-full limestone-block rounded-sm relative ${Math.random() > 0.8 ? 'spark shadow-[0_0_15px_#fff]' : ''}`}
+                        whileHover={{ 
+                          scale: 1.2, 
+                          translateZ: 100, 
+                          filter: 'brightness(1.5)',
+                          transition: { duration: 0.2 }
+                        }}
+                        className={`w-full h-full limestone-block rounded-sm relative ${Math.random() > 0.85 ? 'spark shadow-[0_0_20px_#fff]' : ''}`}
                         style={{ 
-                          boxShadow: `0 0 15px ${accentColor}aa, 4px 4px 15px rgba(0,0,0,0.9)`,
-                          border: `1px solid ${accentColor}aa`,
+                          boxShadow: `0 0 20px ${accentColor}cc, 6px 6px 20px rgba(0,0,0,0.9)`,
+                          border: `1.5px solid ${accentColor}cc`,
                           '--accent-color': accentColor,
                           transformStyle: 'preserve-3d'
                         } as any}
@@ -266,157 +277,121 @@ function RomanNumeralBuilder({ numeral, accentColor, onBlockPlaced }: { numeral:
   return <BlockTextBuilder text={numeral} accentColor={accentColor} onBlockPlaced={onBlockPlaced} />;
 }
 
-function OlympusBackground({ isLightning, onLightningStrike }: { isLightning?: boolean, onLightningStrike?: () => void }) {
-  useEffect(() => {
-    if (isLightning) {
-      onLightningStrike?.();
-    }
-  }, [isLightning, onLightningStrike]);
-
+function CosmicOlympus({ isLightning, count }: { isLightning?: boolean, count: number }) {
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none z-10 flex items-end justify-between px-10 pb-0">
-      {/* Zeus Figure - Left */}
-      <motion.div 
-        animate={{ 
-          y: [0, -15, 0],
-          opacity: isLightning ? 1 : [0.4, 0.7, 0.4],
-          filter: isLightning 
-            ? 'brightness(3) blur(0px) drop-shadow(0 0 50px white)' 
-            : ['brightness(1.5) blur(1px)', 'brightness(2.2) blur(0px)', 'brightness(1.5) blur(1px)']
-        }}
-        transition={{ duration: isLightning ? 0.1 : 5, repeat: isLightning ? 0 : Infinity, ease: 'easeInOut' }}
-        className="w-[35vw] max-w-[600px] text-white drop-shadow-[0_0_80px_rgba(255,255,255,0.6)] relative -mb-10"
-      >
-        <svg viewBox="0 0 100 200" fill="currentColor">
-          <path d="M50 20 L65 40 L85 60 L75 90 L90 130 L60 125 L50 190 L40 125 L10 130 L25 90 L15 60 L35 40 Z" />
-          
-          {/* Animated Lightning Bolt */}
-          <motion.path 
-            d="M45 40 L50 10 L55 40 Z" 
-            animate={isLightning ? {
-              opacity: [0, 1, 0, 1, 0],
-              scale: [1, 1.5, 1.2, 2, 1],
-              fill: ['#fff', '#00f2ff', '#fff']
-            } : {
-              opacity: [0.6, 1, 0.6],
-            }}
-            transition={{ duration: isLightning ? 0.3 : 2, repeat: isLightning ? 0 : Infinity }}
-            fill="white" 
-          />
-          <path d="M30 70 L50 65 L70 70" stroke="white" strokeWidth="2" fill="none" />
-        </svg>
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+      {/* Deep Space Base */}
+      <div className="absolute inset-0 bg-[#020205]"></div>
+      
+      {/* Stars */}
+      {[...Array(60)].map((_, i) => (
+        <motion.div
+          key={i}
+          initial={{ 
+            x: Math.random() * 100 + "%", 
+            y: Math.random() * 100 + "%",
+            opacity: Math.random() * 0.5 + 0.2
+          }}
+          animate={{ 
+            opacity: [0.2, 0.7, 0.2],
+            scale: [1, 1.3, 1]
+          }}
+          transition={{ 
+            duration: 3 + Math.random() * 5, 
+            repeat: Infinity,
+            delay: Math.random() * 5
+          }}
+          className="absolute w-[1px] h-[1px] bg-blue-100 rounded-full"
+        />
+      ))}
 
-        {/* Lightning strike visual effect from bolt */}
-        {isLightning && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 1, 0] }}
-            className="absolute top-0 left-1/2 -translate-x-1/2 w-4 h-[1000px] bg-white blur-xl"
-            style={{ transform: 'rotate(15deg) translateY(-200px)' }}
-          />
-        )}
-      </motion.div>
-
-      {/* Venus/Aphrodite - Far Left */}
+      {/* Nebula Glitches */}
       <motion.div 
-        animate={{ 
-          y: [0, -20, 0],
-          x: [0, 10, 0],
-          opacity: [0.3, 0.6, 0.3]
-        }}
-        transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute left-[5%] bottom-[10%] w-[18vw] max-w-[300px] text-pink-400 drop-shadow-[0_0_40px_rgba(244,114,182,0.5)] blur-[0.5px] hidden md:block"
-      >
-        <svg viewBox="0 0 100 200" fill="currentColor">
-          <path d="M50 30 C 50 30 70 40 75 70 C 80 100 70 140 50 180 C 30 140 20 100 25 70 C 30 40 50 30 50 30" />
-          <circle cx="50" cy="20" r="10" />
-          <path d="M30 100 L20 120 L30 140 Z" opacity="0.5" />
-          <path d="M70 100 L80 120 L70 140 Z" opacity="0.5" />
-        </svg>
-      </motion.div>
+        animate={{ opacity: [0.05, 0.1, 0.05] }}
+        transition={{ duration: 10, repeat: Infinity }}
+        className="absolute inset-0 bg-[radial-gradient(circle_at_center,_#4c1d9533_0%,_transparent_70%)]"
+      />
 
-      {/* Hera Figure - Center-Right */}
-      <motion.div 
-        animate={{ 
-          y: [0, -15, 0],
-          opacity: [0.2, 0.4, 0.2]
-        }}
-        transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-        className="w-[20vw] max-w-[350px] text-white hidden xl:block relative"
-      >
-        <svg viewBox="0 0 100 200" fill="currentColor">
-          <path d="M50 30 C 70 30 80 60 80 100 L 90 180 L 10 180 L 20 100 C 20 60 30 30 50 30" />
-          <circle cx="50" cy="20" r="8" />
-          
-          {/* Shimmering Crown */}
-          <motion.g
-            animate={{ 
-              filter: ['brightness(1) drop-shadow(0 0 5px gold)', 'brightness(2.5) drop-shadow(0 0 20px gold)', 'brightness(1) drop-shadow(0 0 5px gold)'],
-            }}
-            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            <path d="M35 15 L50 0 L65 15 L50 10 Z" fill="gold" />
-            <circle cx="50" cy="5" r="3" fill="white" className="animate-pulse" />
-          </motion.g>
-        </svg>
-      </motion.div>
+      <div className="absolute inset-0 flex items-end justify-between px-10 pb-0">
+        {/* Zeus - Left */}
+        <motion.div 
+          animate={{ 
+            y: [0, -20, 0],
+            opacity: isLightning ? 1 : (count > 5 ? 0.6 : 0.3),
+            filter: isLightning 
+              ? 'brightness(4) blur(0px) drop-shadow(0 0 50px white)' 
+              : 'brightness(1.2) blur(1px)'
+          }}
+          transition={{ duration: isLightning ? 0.1 : 6, repeat: isLightning ? 0 : Infinity }}
+          className="w-[30vw] max-w-[500px] text-blue-100/40 relative -mb-10"
+        >
+          <svg viewBox="0 0 100 200" fill="currentColor">
+            <path d="M50 20 L65 40 L85 60 L75 90 L90 130 L60 125 L50 190 L40 125 L10 130 L25 90 L15 60 L35 40 Z" />
+            <motion.path 
+              d="M45 40 L50 10 L55 40 Z" 
+              animate={isLightning ? {
+                scale: [1, 2, 1],
+                fill: ['#fff', '#00f2ff', '#fff']
+              } : { opacity: 0.5 }}
+              transition={{ duration: 0.3 }}
+              fill="white" 
+            />
+          </svg>
+          {isLightning && (
+            <motion.div 
+              animate={{ opacity: [0, 1, 0] }}
+              className="absolute top-0 left-1/2 -translate-x-1/2 w-[2px] h-[800px] bg-white shadow-[0_0_40px_white] blur-[2px]"
+              style={{ transform: 'rotate(15deg) translateY(-200px)' }}
+            />
+          )}
+        </motion.div>
 
-      {/* Apollo/Jupiter - Center-Left */}
-      <motion.div 
-        animate={{ 
-          scale: [1, 1.1, 1],
-          opacity: [0.1, 0.2, 0.1]
-        }}
-        transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
-        className="absolute left-[35%] top-[15%] w-[20vw] max-w-[300px] text-yellow-200 blur-[1px] hidden lg:block"
-      >
-        <svg viewBox="0 0 100 100" fill="currentColor">
-           <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="4 4" />
-           <path d="M50 5 L55 45 L95 50 L55 55 L50 95 L45 55 L5 50 L45 45 Z" />
-           <circle cx="50" cy="50" r="10" />
-        </svg>
-      </motion.div>
+        {/* Hera - Center */}
+        <motion.div 
+          animate={{ 
+            y: [0, -30, 0],
+            opacity: count === 10 || count === 1 ? 0.8 : 0.4
+          }}
+          transition={{ duration: 8, repeat: Infinity }}
+          className="w-[20vw] max-w-[300px] text-purple-200/30 hidden lg:block"
+        >
+          <svg viewBox="0 0 100 200" fill="currentColor">
+            <path d="M50 30 C 70 30 80 60 80 100 L 90 180 L 10 180 L 20 100 C 20 60 30 30 50 30" />
+            <motion.circle 
+              cx="50" cy="5" r="4" 
+              fill="gold"
+              animate={{ opacity: count === 1 ? [0, 1] : 0.5, scale: count === 1 ? [1, 2] : 1 }}
+            />
+          </svg>
+        </motion.div>
 
-      {/* Poseidon Figure - Right */}
-      <motion.div 
-        animate={{ 
-          y: [0, -12, 0],
-          opacity: [0.4, 0.8, 0.4]
-        }}
-        transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-        className="w-[35vw] max-w-[600px] text-cyan-300 drop-shadow-[0_0_60px_rgba(34,211,238,0.6)] relative -mb-10"
-      >
-        <svg viewBox="0 0 100 200" fill="currentColor">
-          <path d="M45 10 L55 10 L55 190 L45 190 Z" />
-          
-          {/* Trident with pulse */}
-          <motion.path 
-            d="M25 30 L45 60 L55 60 L75 30 L65 25 L55 50 L45 50 L35 25 Z" 
-            animate={{ 
-              filter: ['brightness(1) drop-shadow(0 0 0px cyan)', 'brightness(2) drop-shadow(0 0 15px cyan)', 'brightness(1) drop-shadow(0 0 0px cyan)'],
-            }}
-            transition={{ duration: 2, repeat: Infinity }}
-          />
-          
-          <path d="M20 120 C 30 100 70 100 80 120 L 85 190 L 15 190 Z" />
-          
-          {/* Wave Effects */}
-          <motion.circle 
-            cx="50" cy="50" r="0" 
-            stroke="rgba(0, 242, 255, 0.8)" strokeWidth="2" fill="none"
-            animate={{ r: [0, 100], opacity: [0.8, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: 'easeOut' }}
-          />
-          <motion.circle 
-            cx="50" cy="50" r="0" 
-            stroke="rgba(111, 0, 255, 0.5)" strokeWidth="1" fill="none"
-            animate={{ r: [0, 120], opacity: [0.5, 0] }}
-            transition={{ duration: 5, repeat: Infinity, ease: 'easeOut', delay: 2.5 }}
-          />
-        </svg>
-      </motion.div>
+        {/* Poseidon - Right */}
+        <motion.div 
+          animate={{ 
+            y: [0, -15, 0],
+            opacity: count < 5 ? 0.7 : 0.3
+          }}
+          transition={{ duration: 7, repeat: Infinity }}
+          className="w-[30vw] max-w-[500px] text-cyan-200/40 relative -mb-10"
+        >
+          <svg viewBox="0 0 100 200" fill="currentColor">
+            <path d="M45 10 L55 10 L55 190 L45 190 Z" />
+            <path d="M25 30 L45 60 L55 60 L75 30 L65 25 L55 50 L45 50 L35 25 Z" />
+            <motion.circle 
+              cx="50" cy="50" r="0" 
+              stroke="cyan" strokeWidth="1" fill="none"
+              animate={{ r: [0, 150], opacity: [0.6, 0] }}
+              transition={{ duration: 4, repeat: Infinity }}
+            />
+          </svg>
+        </motion.div>
+      </div>
     </div>
   );
+}
+
+function SpaceBackground() {
+  return null; // Deprecated in favor of CosmicOlympus
 }
 
 export default function App() {
@@ -565,9 +540,9 @@ export default function App() {
         const next = prev - 1;
         speakBilingual(next);
         setIsLightning(true);
-        setTimeout(() => setIsLightning(false), 300);
+        setTimeout(() => setIsLightning(false), 500);
         setShowFlash(true);
-        setTimeout(() => setShowFlash(false), 300);
+        setTimeout(() => setShowFlash(false), 500);
         // Clear inventory for next number
         setQuarryInventory([]);
         return next;
@@ -605,13 +580,21 @@ export default function App() {
     setResetTrigger(prev => prev + 1);
   };
 
+  const getThematicAccent = (num: number) => {
+    if (num === 10) return "#fbbf24"; // Zeus Gold
+    if (num >= 5) return "#e5e7eb"; // Hera Silver
+    return "#06b6d4"; // Poseidon Cyan
+  };
+
+  const thematicColor = getThematicAccent(currentNumber);
+
   return (
     <div id="app-container" className="fixed inset-0 bg-[#080808] text-[#e0e0e0] font-mono flex flex-col overflow-hidden select-none">
       <div id="bg-mesh" className="absolute inset-0 opacity-20 pointer-events-none mesh-pattern"></div>
       <div className="absolute inset-0 pointer-events-none tech-scanline opacity-30"></div>
       
-      <FluidCanvas viscosity={viscosity} density={density} color={accentColor} resetTrigger={resetTrigger} />
-      <OlympusBackground isLightning={isLightning} onLightningStrike={playThunder} />
+      <FluidCanvas viscosity={viscosity} density={density} color={thematicColor} resetTrigger={resetTrigger} />
+      <CosmicOlympus isLightning={isLightning} count={currentNumber} />
 
       <AnimatePresence>
         {showFlash && (
@@ -671,7 +654,7 @@ export default function App() {
       <main id="main-content" className="flex flex-1 relative z-10 overflow-hidden">
         <aside id="left-sidebar" className="w-72 border-r border-white/10 p-8 flex flex-col gap-10 overflow-y-auto backdrop-blur-md bg-black/40">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-            <h3 className="text-[11px] uppercase tracking-widest text-[#00f2ff] mb-6 flex items-center gap-2 neon-glow" style={{'--color-accent': accentColor} as any}>
+            <h3 className="text-[11px] uppercase tracking-widest text-[#00f2ff] mb-6 flex items-center gap-2 neon-glow" style={{'--color-accent': thematicColor} as any}>
               <Sliders size={14} />
               Quarry Control
             </h3>
@@ -705,7 +688,7 @@ export default function App() {
           </motion.div>
 
           <div className="space-y-4">
-            <h3 className="text-[11px] uppercase tracking-widest text-white/60 mb-6 flex items-center gap-2 neon-glow" style={{'--color-accent': accentColor} as any}>
+            <h3 className="text-[11px] uppercase tracking-widest text-white/60 mb-6 flex items-center gap-2 neon-glow" style={{'--color-accent': thematicColor} as any}>
               <Sparkles size={14} />
               I/O Presets
             </h3>
@@ -775,7 +758,7 @@ export default function App() {
               >
                 <RomanNumeralBuilder 
                   numeral={ROMAN_MAP[currentNumber]} 
-                  accentColor={accentColor} 
+                  accentColor={thematicColor} 
                   onBlockPlaced={playThud}
                 />
                 
@@ -814,8 +797,8 @@ export default function App() {
 
                 <div className="text-center space-y-6 relative flex flex-col items-center">
                   <div className="flex flex-col gap-2 scale-75 sm:scale-90 overflow-hidden pt-4 pb-8">
-                    <BlockTextBuilder text="GOOGLE" accentColor={accentColor} onBlockPlaced={playThud} size="sm" />
-                    <BlockTextBuilder text="I/O" accentColor={accentColor} onBlockPlaced={playThud} size="sm" />
+                    <BlockTextBuilder text="GOOGLE" accentColor={thematicColor} onBlockPlaced={playThud} size="sm" />
+                    <BlockTextBuilder text="I/O" accentColor={thematicColor} onBlockPlaced={playThud} size="sm" />
                   </div>
                   
                   <div className="space-y-6 flex flex-col items-center">
@@ -839,10 +822,10 @@ export default function App() {
                 
                 <button 
                   onClick={restartCountdown}
-                  className="group relative px-10 py-4 bg-[#00f2ff] text-black text-xs font-black tracking-[0.4em] uppercase overflow-hidden transition-all hover:scale-105 active:scale-95 shadow-[0_0_40px_rgba(0,242,255,0.4)] rounded-sm mt-4"
+                  className="group relative px-10 py-4 bg-white text-black text-xs font-black tracking-[0.4em] uppercase overflow-hidden transition-all hover:scale-105 active:scale-95 shadow-[0_0_40px_rgba(255,255,255,0.4)] rounded-full mt-4"
                 >
                   <span className="relative z-10 flex items-center gap-3"><RefreshCcw size={14} /> RESTART SEQUENCE</span>
-                  <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                  <div className="absolute inset-0 bg-[#00f2ff] translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                 </button>
               </motion.div>
             )}
@@ -945,7 +928,7 @@ export default function App() {
           </div>
           
           <div className="p-4 bg-[#00f2ff]/10 border border-[#00f2ff]/30 rounded-sm shadow-[0_0_20px_rgba(0,242,255,0.1)]">
-             <h4 className="text-[10px] uppercase text-[#00f2ff] mb-2 font-black tracking-widest neon-glow" style={{'--color-accent': accentColor} as any}>Divine Decree</h4>
+             <h4 className="text-[10px] uppercase text-[#00f2ff] mb-2 font-black tracking-widest neon-glow" style={{'--color-accent': thematicColor} as any}>Divine Decree</h4>
              <p className="text-[9px] text-[#00f2ff]/60 leading-relaxed font-bold italic uppercase tracking-tighter">
                "Forging the future from the fires of the past."
              </p>

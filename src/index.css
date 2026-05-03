@@ -115,6 +115,21 @@ body {
   border-bottom: 1.5px solid rgba(255, 255, 255, 0.3);
 }
 
+/* Cosmic Background Animations */
+@keyframes star-flicker {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+.star-flicker {
+  animation: star-flicker 3s infinite ease-in-out;
+}
+
+.cosmic-nebula {
+  background: radial-gradient(circle at center, rgba(76, 29, 149, 0.15) 0%, transparent 70%);
+  filter: blur(60px);
+}
+
 /* Random Spark Animation for blocks */
 .limestone-block.spark::before {
   animation: spark-flash 0.1s steps(2) infinite;
