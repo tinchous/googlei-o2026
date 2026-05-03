@@ -39,7 +39,13 @@ export default function FluidCanvas({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const renderer = new Renderer({ dpr: Math.min(2, window.devicePixelRatio), canvas, alpha: true });
+    // Forzar WebGL2
+    const renderer = new Renderer({ 
+      dpr: Math.min(2, window.devicePixelRatio), 
+      canvas, 
+      alpha: true,
+      antialias: true
+    });
     const gl = renderer.gl;
     const camera = new Camera(gl);
     camera.position.z = 1;
@@ -161,7 +167,7 @@ export default function FluidCanvas({
     };
 
     const resetSimulation = () => {
-      const clearProgram = new Program(gl, { vertex: baseVertex, fragment: `precision highp float; out vec4 fragColor; void main() { fragColor = vec4(0.0); }` });
+      const clearProgram = new Program(gl, { vertex: baseVertex, fragment: `precision highp float; void main() { gl_FragColor = vec4(0.0); }` });
       const clearMesh = new Mesh(gl, { geometry, program: clearProgram });
       renderer.render({ scene: clearMesh, target: targetVelocityA });
       renderer.render({ scene: clearMesh, target: targetVelocityB });
@@ -178,12 +184,12 @@ export default function FluidCanvas({
 
     resetSimulation();
 
-    // LOOP DE ANIMACIÓN CONTINUA (esto evita la pantalla negra)
+    // LOOP DE ANIMACIÓN (esto evita pantalla negra)
     let rafId: number;
     const animate = () => {
       rafId = requestAnimationFrame(animate);
 
-      // Advect velocity y density (mantén el fluido vivo)
+      // Advect velocity
       advectProgram.uniforms.tWater = { value: targetVelocityA.texture };
       advectProgram.uniforms.tVelocity = { value: targetVelocityA.texture };
       advectProgram.uniforms.uDt = { value: 0.016 };
@@ -191,18 +197,18 @@ export default function FluidCanvas({
       renderer.render({ scene: advectMesh, target: targetVelocityB });
       swap(targetVelocityA, targetVelocityB);
 
+      // Advect density
       advectProgram.uniforms.tWater = { value: targetDensityA.texture };
       advectProgram.uniforms.tVelocity = { value: targetVelocityA.texture };
       advectProgram.uniforms.uDissipation = { value: density };
       renderer.render({ scene: advectMesh, target: targetDensityB });
       swap(targetDensityA, targetDensityB);
 
-      // Render final
-      renderer.render({ scene: advectMesh }); // o display program si tenés uno
+      // Render final al canvas
+      renderer.render({ scene: advectMesh });
     };
     rafId = requestAnimationFrame(animate);
 
-    // Cleanup
     return () => cancelAnimationFrame(rafId);
   }, [viscosity, density, color, resetTrigger, currentNumber]);
 
