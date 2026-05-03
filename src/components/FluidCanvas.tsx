@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Renderer, Camera, Geometry, Program, Mesh, RenderTarget, Vec2, Vec3 } from 'ogl';
 
-// GLYPHS y ROMAN_MAP para forjar el número en el fluido
+// GLYPHS y ROMAN_MAP para forjar el número
 const GLYPHS: Record<string, number[][]> = {
   'X': [[1,0,0,0,1],[0,1,0,1,0],[0,0,1,0,0],[0,1,0,1,0],[1,0,0,0,1]],
   'V': [[1,0,0,0,1],[1,0,0,0,1],[0,1,0,1,0],[0,1,0,1,0],[0,0,1,0,0]],
@@ -103,8 +103,17 @@ export default function FluidCanvas({
       }
     `;
 
-    // RenderTargets (creados manualmente, sin .clone())
-    const targetOptions = { width: canvas.width, height: canvas.height, type: gl.HALF_FLOAT || gl.FLOAT, format: gl.RGBA, minFilter: gl.LINEAR };
+    // RenderTargets seguros (sin clone, con formato compatible)
+    const targetOptions = {
+      width: canvas.width,
+      height: canvas.height,
+      type: gl.FLOAT,
+      format: gl.RGBA,
+      internalFormat: gl.RGBA32F || gl.RGBA16F || gl.RGBA,
+      minFilter: gl.LINEAR,
+      depth: false
+    };
+
     const targetVelocityA = new RenderTarget(gl, targetOptions);
     const targetVelocityB = new RenderTarget(gl, targetOptions);
     const targetDensityA = new RenderTarget(gl, targetOptions);
@@ -122,8 +131,10 @@ export default function FluidCanvas({
 
     const forgeGlyphInFluid = (glyph: number[][], intensity = 1.3) => {
       if (!glyph) return;
-      const cols = 5; const rows = 5;
-      const cellW = 1 / cols; const cellH = 1 / rows;
+      const cols = 5;
+      const rows = 5;
+      const cellW = 1 / cols;
+      const cellH = 1 / rows;
       const radius = 0.085;
 
       for (let y = 0; y < rows; y++) {
@@ -140,7 +151,7 @@ export default function FluidCanvas({
             renderer.render({ scene: splatMesh, target: targetDensityB });
             swap(targetDensityA, targetDensityB);
 
-            // Fuerza atracción
+            // Fuerza de atracción
             forceProgram.uniforms.tVelocity = { value: targetVelocityA.texture };
             forceProgram.uniforms.uPoint = { value: new Vec2(u, v) };
             forceProgram.uniforms.uForce = { value: new Vec2(0, -1.2) };
@@ -153,7 +164,6 @@ export default function FluidCanvas({
     };
 
     const resetSimulation = () => {
-      // Clear
       const clearProgram = new Program(gl, { vertex: baseVertex, fragment: `precision highp float; out vec4 fragColor; void main() { fragColor = vec4(0.0); }` });
       const clearMesh = new Mesh(gl, { geometry, program: clearProgram });
       renderer.render({ scene: clearMesh, target: targetVelocityA });
@@ -170,20 +180,12 @@ export default function FluidCanvas({
       }
     };
 
-    // Trigger forge cuando cambia el número
-    useEffect(() => {
-      if (currentNumber !== undefined) {
-        const roman = ROMAN_MAP[currentNumber] || 'V';
-        const firstChar = roman[0] || 'V';
-        const glyph = GLYPHS[firstChar] || GLYPHS['V'];
-        forgeGlyphInFluid(glyph, 1.2);
-      }
-    }, [currentNumber]);
-
     resetSimulation();
 
     // Cleanup
-    return () => renderer.destroy();
+    return () => {
+      renderer.destroy();
+    };
   }, [viscosity, density, color, resetTrigger, currentNumber]);
 
   return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />;
