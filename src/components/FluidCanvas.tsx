@@ -103,7 +103,7 @@ export default function FluidCanvas({
       }
     `;
 
-    // RenderTargets seguros (sin clone, con formato compatible)
+    // RenderTargets seguros
     const targetOptions = {
       width: canvas.width,
       height: canvas.height,
@@ -130,7 +130,7 @@ export default function FluidCanvas({
     const swap = (a: RenderTarget, b: RenderTarget) => { [a.texture, b.texture] = [b.texture, a.texture]; };
 
     const forgeGlyphInFluid = (glyph: number[][], intensity = 1.3) => {
-      if (!glyph) return;
+      if (!glyph) return;  // Guard clause (tu opción 3)
       const cols = 5;
       const rows = 5;
       const cellW = 1 / cols;
@@ -139,7 +139,7 @@ export default function FluidCanvas({
 
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
-          if (glyph[y][x] === 1) {
+          if (glyph[y]?.[x] === 1) {  // Optional chaining (tu opción 1)
             const u = (x + 0.5) * cellW;
             const v = (y + 0.5) * cellH;
 
@@ -171,8 +171,8 @@ export default function FluidCanvas({
       renderer.render({ scene: clearMesh, target: targetDensityA });
       renderer.render({ scene: clearMesh, target: targetDensityB });
 
-      // FORJA INMEDIATA
-      if (currentNumber !== undefined) {
+      // FORJA INMEDIATA DEL NÚMERO
+      if (currentNumber !== undefined) {  // Guard clause
         const roman = ROMAN_MAP[currentNumber] || 'V';
         const firstChar = roman[0] || 'V';
         const glyph = GLYPHS[firstChar] || GLYPHS['V'];
