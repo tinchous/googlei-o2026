@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Renderer, Camera, Geometry, Program, Mesh, RenderTarget, Vec2, Vec3 } from 'ogl';
 
-// GLYPHS y ROMAN_MAP para forjar el número
+// GLYPHS y ROMAN_MAP
 const GLYPHS: Record<string, number[][]> = {
   'X': [[1,0,0,0,1],[0,1,0,1,0],[0,0,1,0,0],[0,1,0,1,0],[1,0,0,0,1]],
   'V': [[1,0,0,0,1],[1,0,0,0,1],[0,1,0,1,0],[0,1,0,1,0],[0,0,1,0,0]],
@@ -103,7 +103,6 @@ export default function FluidCanvas({
       }
     `;
 
-    // RenderTargets seguros
     const targetOptions = {
       width: canvas.width,
       height: canvas.height,
@@ -130,7 +129,7 @@ export default function FluidCanvas({
     const swap = (a: RenderTarget, b: RenderTarget) => { [a.texture, b.texture] = [b.texture, a.texture]; };
 
     const forgeGlyphInFluid = (glyph: number[][], intensity = 1.3) => {
-      if (!glyph) return;  // Guard clause (tu opción 3)
+      if (!glyph) return;
       const cols = 5;
       const rows = 5;
       const cellW = 1 / cols;
@@ -139,11 +138,10 @@ export default function FluidCanvas({
 
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
-          if (glyph[y]?.[x] === 1) {  // Optional chaining (tu opción 1)
+          if (glyph[y]?.[x] === 1) {
             const u = (x + 0.5) * cellW;
             const v = (y + 0.5) * cellH;
 
-            // Splat densidad = forma del número
             splatProgram.uniforms.tWater = { value: targetDensityA.texture };
             splatProgram.uniforms.uPoint = { value: new Vec2(u, v) };
             splatProgram.uniforms.uRadius = { value: radius };
@@ -151,7 +149,6 @@ export default function FluidCanvas({
             renderer.render({ scene: splatMesh, target: targetDensityB });
             swap(targetDensityA, targetDensityB);
 
-            // Fuerza de atracción
             forceProgram.uniforms.tVelocity = { value: targetVelocityA.texture };
             forceProgram.uniforms.uPoint = { value: new Vec2(u, v) };
             forceProgram.uniforms.uForce = { value: new Vec2(0, -1.2) };
@@ -171,8 +168,7 @@ export default function FluidCanvas({
       renderer.render({ scene: clearMesh, target: targetDensityA });
       renderer.render({ scene: clearMesh, target: targetDensityB });
 
-      // FORJA INMEDIATA DEL NÚMERO
-      if (currentNumber !== undefined) {  // Guard clause
+      if (currentNumber !== undefined) {
         const roman = ROMAN_MAP[currentNumber] || 'V';
         const firstChar = roman[0] || 'V';
         const glyph = GLYPHS[firstChar] || GLYPHS['V'];
@@ -182,10 +178,32 @@ export default function FluidCanvas({
 
     resetSimulation();
 
-    // Cleanup
-    return () => {
-      renderer.destroy();
+    // LOOP DE ANIMACIÓN CONTINUA (esto evita la pantalla negra)
+    let rafId: number;
+    const animate = () => {
+      rafId = requestAnimationFrame(animate);
+
+      // Advect velocity y density (mantén el fluido vivo)
+      advectProgram.uniforms.tWater = { value: targetVelocityA.texture };
+      advectProgram.uniforms.tVelocity = { value: targetVelocityA.texture };
+      advectProgram.uniforms.uDt = { value: 0.016 };
+      advectProgram.uniforms.uDissipation = { value: viscosity };
+      renderer.render({ scene: advectMesh, target: targetVelocityB });
+      swap(targetVelocityA, targetVelocityB);
+
+      advectProgram.uniforms.tWater = { value: targetDensityA.texture };
+      advectProgram.uniforms.tVelocity = { value: targetVelocityA.texture };
+      advectProgram.uniforms.uDissipation = { value: density };
+      renderer.render({ scene: advectMesh, target: targetDensityB });
+      swap(targetDensityA, targetDensityB);
+
+      // Render final
+      renderer.render({ scene: advectMesh }); // o display program si tenés uno
     };
+    rafId = requestAnimationFrame(animate);
+
+    // Cleanup
+    return () => cancelAnimationFrame(rafId);
   }, [viscosity, density, color, resetTrigger, currentNumber]);
 
   return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />;
